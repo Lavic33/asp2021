@@ -21,6 +21,10 @@ using Shop.Implementation.Commands.OrderStatusCommands;
 using Shop.Implementation.Validations;
 using Shop.Application.Mail;
 using Shop.Implementation.SMTPMail;
+using Shop.Application;
+using Microsoft.AspNetCore.Http;
+using Shop.API.Core;
+using Newtonsoft.Json;
 
 namespace Shop.API
 {
@@ -50,8 +54,43 @@ namespace Shop.API
             services.AddTransient<IGetProducts, GetProducts>();
             services.AddTransient<IGetBrends, IGetBrends>();
 
-           // services.AddTransient<IMailSender, SmtpEmailSender>(x => new SMPTMail(AppSettings.EmailFrom, appSettings.EmailPassword));
+            services.AddTransient<NewProdVal>();
+            services.AddTransient<BrendVal>();
+            services.AddTransient<CategoryVal>();
+            services.AddTransient<RegisterVal>();
+            services.AddTransient<OrderVal>();
+            // services.AddTransient<IMailSender, SmtpEmailSender>(x => new SMPTMail(AppSettings.EmailFrom, appSettings.EmailPassword));
 
+            services.AddTransient<IAppActor>(x =>
+            {
+                var accessor = x.GetService<IHttpContextAccessor>();
+
+
+                var user = accessor.HttpContext.User;
+
+                if (user.FindFirst("ActorData") == null)
+                {
+                    return new UnauthrorizedActor();
+                }
+
+                var actorString = user.FindFirst("ActorData").Value;
+
+                var actor = JsonConvert.DeserializeObject<JwtActor>(actorString);
+
+                return actor;
+
+            });
+            services.AddJwt(appSettings);
+
+
+
+
+            services.AddTransient<IGetCategories, GetCatsQuery>();
+            services.AddTransient<IGetBrends, GetBrendsQuery>();
+            services.AddTransient<IGetLogsQuery, GetLogsQuery>();
+            services.AddTransient<IGetProducts, GetProducts>();
+            services.AddTransient<IGetOrdersQuery, GetOrdersQuery>();
+            services.AddTransient<IGetLogsQuery, GetLogsQuery>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
