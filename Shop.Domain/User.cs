@@ -14,6 +14,7 @@ namespace Shop.Domain
         public string City { get; set; }
 
         public ICollection<UserUseCase> UserUseCases { get; set; } = new HashSet<UserUseCase>();
+        public ICollection<Order> Orders { get; set; } = new HashSet<Order>();
 
 
 
